@@ -4,14 +4,14 @@
 import sys
 import json
 import datetime
-import requests
+#import requests
 import argparse
 from random import shuffle
 import os.path
 from multiprocessing.dummy import Pool as ThreadPool
 import time
 
-from requests.auth import HTTPBasicAuth
+#from requests.auth import HTTPBasicAuth
 
 
 class Timer(object):
@@ -28,7 +28,8 @@ class Timer(object):
 
 # some constants for search
 URL_BASE = 'http://localhost:9200/articles_dummy/article/_count'
-AUTH = HTTPBasicAuth('dduser', 'searchtime')
+#AUTH = HTTPBasicAuth('dduser', 'searchtime')
+AUTH = None
 
 def make_query_object(target_term, key_phrase, through_year):
     # build the constraint list first
@@ -78,9 +79,11 @@ def get_count(target_term, key_phrase, through_year, url_base, auth):
     assert not isinstance(key_phrase, str) , "my error msg"
     # target term and/or key phrase may be None
     q = make_query_object(target_term, key_phrase, through_year)
-    res = requests.get(url_base, data=json.dumps(q), auth=auth)
-    ret_cnt = res.json()['count']
-    return ret_cnt
+    print q
+    #res = requests.get(url_base, data=json.dumps(q), auth=auth)
+    #ret_cnt = res.json()['count']
+    #return ret_cnt
+    return 0
 
 def build_arg_parser():
     parser = argparse.ArgumentParser(description='Run a KinderMiner search on CHTC')
