@@ -165,6 +165,9 @@ def do_junk(key_phrase):
 #    print("\tInvestigating key phrase %s" % key_phrase[0])
     outfile_name = get_output_filename(key_phrase[0], key_phrase[1])
     outfile_path_name = os.path.join(OUTPUT_DIRECTORY, outfile_name + ".txt")
+    if not os.path.exists(OUTPUT_DIRECTORY):
+        os.mkdir(OUTPUT_DIRECTORY)
+
     with open(outfile_path_name, 'w') as out_fh:
         kp_cnt = get_count(None, key_phrase, THROUGH_YEAR, URL_BASE, AUTH)
 
