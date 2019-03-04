@@ -1,0 +1,3 @@
+# arguments are list_1, list_2, output dir 
+
+python chtc_query2.py drugs_lexicon_reducedList.txt diseases_lexicon_reducedList.txt output
