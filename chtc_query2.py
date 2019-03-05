@@ -10,8 +10,7 @@ from random import shuffle
 import os.path
 from multiprocessing.dummy import Pool as ThreadPool
 import time
-
-#from requests.auth import HTTPBasicAuth
+import re
 
 
 class Timer(object):
@@ -27,63 +26,56 @@ class Timer(object):
         print 'Elapsed: %s' % (time.time() - self.tstart)
 
 # some constants for search
-URL_BASE = 'http://localhost:9200/articles_dummy/article/_count'
-#AUTH = HTTPBasicAuth('dduser', 'searchtime')
-AUTH = None
+#URL_BASE = 'http://localhost:9200/articles_dummy/article/_count'
+#URL_BASE_search = 'http://localhost:9200/articles_dummy/article/_search'
+URL_BASE = 'http://localhost:9200/articles_dummy/_count'
+URL_BASE_search = 'http://localhost:9200/articles_dummy/_search'
+URL_BASE_scroll = 'http://localhost:9200/_search/scroll'
 
-def make_query_object(target_term, key_phrase, through_year):
-    # build the constraint list first
-    should_tt = []
-    should_kp = []
+baseurl   = 'http://localhost:9200'
+indexurl  = baseurl  + '/articles_dummy'
+counturl  = indexurl + '/_count'
+searchurl = indexurl + '/_search'
+scrollurl = baseurl  + '/_search/scroll'
+
+#   if through_year:
+#       must.append({'range': {'publication_date.year': {'lte': through_year}}})
+
+def make_query_object2(terms, extra_conditions=None):
+    should = []
     must = []
-
-    # are we searching on a target term
-    if target_term is not None:
-        target_list = target_term[1]
-        for target_tok in target_list:
-            should_tt.append({
-                'match_phrase' : {'title' : target_tok},
-                })
-            should_tt.append({
-                'match_phrase' : {'abstract' : target_tok}
-                })
-
-    # and key phrase
-    if key_phrase is not None:
-        kp_list = key_phrase[1]
-        for kp_tok in kp_list:
-            should_kp.append({
-                'match_phrase' : {'title' : kp_tok},
-                })
-            should_kp.append({
-                'match_phrase' : {'abstract' : kp_tok}
-                })
-
-    # always add the year constraint
-    must.append({
-        'bool': {
-            'should': should_tt
-        }
-    })
-    must.append({
-        'bool': {
-            'should': should_kp
-        }
-    })
-    must.append({'range' : {'publication_date.year' : {'lte' : through_year}}})
-    query = {'query': {'bool': {'must': must } } }
-
+    for term in terms:
+        should.append({'match_phrase': {'title':    term}})
+        should.append({'match_phrase': {'abstract': term}})
+    must.append({'bool': {'should': should}})
+    if extra_conditions:
+        must += extra_conditions
+    query = {'query': {'bool': {'must': must }}}
     return query
 
-def get_count(target_term, key_phrase, through_year, url_base, auth):
-    assert not isinstance(key_phrase, str) , "my error msg"
-    # target term and/or key phrase may be None
+def scrollhits(query, size=100):
+    url = "%s?scroll=10m" % searchurl
+    q = dict(query, size=size)
+    print time.time()
+    res = requests.post(url, json=q).json()
+    scroll_id = res['_scroll_id']
+    scroll_q = dict(scroll="10m", scroll_id=scroll_id)
+    while res['hits']['hits']:
+        yield res['hits']['hits']
+        print time.time()
+        res = requests.post(scrollurl, json=scroll_q).json()
+        print time.time()
+
+def scrollids(query, size=100):
+    for hits in scrollhits(query, size):
+        for hit in hits:
+            yield hit['_id']
+
+def get_count(terms, through_year, url_base):
     q = make_query_object(target_term, key_phrase, through_year)
-    print q
-    #res = requests.get(url_base, data=json.dumps(q), auth=auth)
-    #ret_cnt = res.json()['count']
-    #return ret_cnt
-    return 0
+    res = requests.get(url_base, data=json.dumps(q))
+    ret_cnt = res.json()['count']
+    return ret_cnt
 
 def build_arg_parser():
     parser = argparse.ArgumentParser(description='Run a KinderMiner search on CHTC')
@@ -94,106 +86,46 @@ def build_arg_parser():
     parser.add_argument('output', help='directory where output file(s) are dumped')
     return parser
 
-# this is the API version used for the web interface
-def run_full_query(all_targets, key_phrase, through_year=None, sep_kp=False):
-    # handle through year
-    if through_year is None:
-        through_year = datetime.datetime.now().year
-    # handle separated key phrase
-    if sep_kp:
-        key_phrase = key_phrase.strip().split()
-    # we will return this as a dictionary stored somewhat compactly
-    ret = dict()
-    # compute the total number of articles in the database
-    db_article_cnt = get_count(None, None, through_year, URL_BASE, AUTH)
-    ret['db_article_cnt'] = db_article_cnt
-    # and the number of times the key phrase shows up
-    kp_cnt = get_count(None, key_phrase, through_year, URL_BASE, AUTH)
-    ret['kp_cnt'] = kp_cnt
-    # now go through each target
-    ret['target'] = list()
-    ret['targ_cnt'] = list()
-    ret['targ_with_kp_cnt'] = list()
-    for target in all_targets:
-        targ_with_kp_cnt = 0
-        # first the individual count
-        targ_cnt = get_count(target, None, through_year, URL_BASE, AUTH)
+def get_terms_synonyms(path):
+    terms_synonyms = []
+    with open(path) as infile:
+        infile.readline()  # skip header line
+        for line in infile:
+            key, vals = line.strip().split('\t')
+            terms = vals.strip().split('|')
+            #id_ = re.search(r'^[A-Z]+0*(\d+)_', key).group(1)
+            terms_synonyms.append((key, terms))
+    return terms_synonyms
+
+def process_file(path):
+    terms_synonyms = get_terms_synonyms(path)
+
+    for key, terms in terms_synonyms:
+        id_ = key.split('_')[0]
+        print "%s\t%s" % (id_, terms)
+        continue
+
+        count = get_count(terms, None, URL_BASE)
+
+        targ_cnt = get_count(target, None, THROUGH_YEAR, URL_BASE)
+
         # only need to query combined if articles exist for both individually
         if targ_cnt > 0 and kp_cnt > 0:
             # now do both key phrase and target
-            targ_with_kp_cnt = get_count(target, key_phrase, through_year, URL_BASE, AUTH)
-        ret['target'].append(target)
-        ret['targ_cnt'].append(targ_cnt)
-        ret['targ_with_kp_cnt'].append(targ_with_kp_cnt)
-    return ret
+            targ_with_kp_cnt = get_count(target, key_phrase, THROUGH_YEAR, URL_BASE)
 
-def get_terms_asTokens(FILE_NAME):
-    terms_asTokens = {}
-    with open(FILE_NAME, 'r') as infile:
-        for line in infile:
-            tmp = line.strip().split('\t')
-            if len(tmp) == 1:
-                tmp = line.strip().split('   ')
-            assert len(tmp)==2, "we expect just id and |-separated string here"
-            var = tmp[1].strip().split('|')
-            tokens = []
-            for el in var:
-                t = el.split(' ')
-                if len(t) == 0:
-                    tokens = [el for el in range(t)]
-                else:
-                    tokens.extend(t)
-            unique_tokens_only = list(set(i.lower() for i in tokens))
-            terms_synonyms.update({tmp[0]: unique_tokens_only})
-    return terms_asTokens
-
-def get_terms_synonyms(FILE_NAME):
-    terms_synonyms = {}
-    with open(FILE_NAME, 'r') as infile:
-        for line in infile:
-            tmp = line.strip().split('\t')
-            if len(tmp) == 1:
-                tmp = line.strip().split('   ')
-            assert len(tmp)==2, "we expect just id and |-separated string here"
-            terms_synonyms.update({tmp[0]: tmp[1].strip().split('|')})
-    return terms_synonyms
-
-def get_output_filename(CUI_key, kp_synonym_list):
-    cuikey = CUI_key.split('_')[0]
-    syn = kp_synonym_list[0].replace(' ', '_')
-    output_file = cuikey + '_' + syn
-    return output_file
-
-def do_junk(key_phrase):
-#    print("\tInvestigating key phrase %s" % key_phrase[0])
-    outfile_name = get_output_filename(key_phrase[0], key_phrase[1])
-    outfile_path_name = os.path.join(OUTPUT_DIRECTORY, outfile_name + ".txt")
-    if not os.path.exists(OUTPUT_DIRECTORY):
-        os.mkdir(OUTPUT_DIRECTORY)
-
-    with open(outfile_path_name, 'w') as out_fh:
-        kp_cnt = get_count(None, key_phrase, THROUGH_YEAR, URL_BASE, AUTH)
-
-        out_fh.write('target\ttarget_with_keyphrase_count\ttarget_count\tkeyphrase_count\tdb_article_count' + '\n')
-        for target in target_terms.items():
-            targ_with_kp_cnt = 0
-            # first the individual count
-            targ_cnt = get_count(target, None, THROUGH_YEAR, URL_BASE, AUTH)
-
-            # only need to query combined if articles exist for both individually
-            if targ_cnt > 0 and kp_cnt > 0:
-                # now do both key phrase and target
-                targ_with_kp_cnt = get_count(target, key_phrase, THROUGH_YEAR, URL_BASE, AUTH)
-
-            key = target[0]
-            value = target[1]
-            outstr = '{0}\t{1}\t{2}\t{3}\t{4}'.format(key+':'+value[0], targ_with_kp_cnt, targ_cnt, kp_cnt, db_article_cnt)
-            #print (outstr)
-            out_fh.write(outstr + '\n')
+        key = target[0]
+        value = target[1]
+        outstr = '{0}\t{1}\t{2}\t{3}\t{4}'.format(key+':'+value[0], targ_with_kp_cnt, targ_cnt, kp_cnt, db_article_cnt)
+        #print (outstr)
+        out_fh.write(outstr + '\n')
 
 
 
 def main():
+    process_file(sys.argv[1])
+    sys.exit(0)
+
     global TARGET_TERM_FILE
     global KEY_PHRASE_FILE_NAME
     global OUTPUT_DIRECTORY
@@ -224,7 +156,7 @@ def main():
 
     # compute the total number of articles in the database
     global db_article_cnt
-    db_article_cnt = get_count(None, None, THROUGH_YEAR, URL_BASE, AUTH)
+    db_article_cnt = get_count(None, None, THROUGH_YEAR, URL_BASE)
     for n_threads in [1]:
         OUTPUT_DIRECTORY = args.output + "_%s" % n_threads
 #        shuffle(key_phrases)
