@@ -3,34 +3,10 @@
 
 import sys
 import json
-import datetime
 import requests
-import argparse
-from random import shuffle
-import os.path
-from multiprocessing.dummy import Pool as ThreadPool
 import time
 import re
 
-
-class Timer(object):
-    def __init__(self, name=None):
-        self.name = name
-
-    def __enter__(self):
-        self.tstart = time.time()
-
-    def __exit__(self, type, value, traceback):
-        if self.name:
-            print '[%s]' % self.name,
-        print 'Elapsed: %s' % (time.time() - self.tstart)
-
-# some constants for search
-#URL_BASE = 'http://localhost:9200/articles_dummy/article/_count'
-#URL_BASE_search = 'http://localhost:9200/articles_dummy/article/_search'
-URL_BASE = 'http://localhost:9200/articles_dummy/_count'
-URL_BASE_search = 'http://localhost:9200/articles_dummy/_search'
-URL_BASE_scroll = 'http://localhost:9200/_search/scroll'
 
 baseurl   = 'http://localhost:9200'
 indexurl  = baseurl  + '/articles_dummy'
