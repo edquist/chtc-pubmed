@@ -11,5 +11,5 @@ usage () {
 txt=$1
 pfx=${txt%.txt}
 
-time ./chtc_query2.py "$txt" 2>&1 > "$pfx.tab" | tee "$pfx.log"
+time ./lex2tab.py "$txt" 2>&1 > "$pfx.tab" | tee "$pfx.log"
 
