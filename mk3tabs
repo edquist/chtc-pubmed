@@ -1,0 +1,12 @@
+#!/bin/bash
+
+lexes=(
+  diseases_lexicon_reducedList.txt
+  drugs_lexicon_reducedList.txt
+  phenotypes_lexicon_v1.3_CUIAndSynonyms.txt
+)
+
+for x in "${lexes[@]}"; do
+  ./mktab $x
+done
+
