@@ -48,6 +48,7 @@ def scrollhits(query, size=100):
         got = len(res['hits']['hits'])
         rem -= got
         print >>sys.stderr, time.time(), "got %s of %s; %s remaining" % (got, total, rem)
+    requests.delete(scrollurl, json={'scroll_id': scroll_id})
 
 
 def scrollids(query, size=100):
