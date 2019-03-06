@@ -26,7 +26,7 @@ def make_terms_query(terms, extra_conditions=None):
     must.append({'bool': {'should': should}})
     if extra_conditions:
         must += extra_conditions
-    query = {'query': {'bool': {'must': must }}}
+    query = {'query': {'bool': {'must': must }}, '_source': False}
     return query
 
 
