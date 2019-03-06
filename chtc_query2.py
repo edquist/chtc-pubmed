@@ -56,13 +56,6 @@ def scrollids(query, size=100):
             yield hit['_id']
 
 
-def get_count(terms, through_year, url_base):
-    q = make_query_object(target_term, key_phrase, through_year)
-    res = requests.get(url_base, data=json.dumps(q))
-    ret_cnt = res.json()['count']
-    return ret_cnt
-
-
 def get_terms_synonyms(path):
     terms_synonyms = []
     with open(path) as infile:
