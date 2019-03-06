@@ -17,7 +17,7 @@ scrollurl = baseurl  + '/_search/scroll'
 #   if through_year:
 #       must.append({'range': {'publication_date.year': {'lte': through_year}}})
 
-def make_query_object2(terms, extra_conditions=None):
+def make_terms_query(terms, extra_conditions=None):
     should = []
     must = []
     for term in terms:
@@ -32,22 +32,20 @@ def make_query_object2(terms, extra_conditions=None):
 def scrollhits(query, size=100):
     url = "%s?scroll=10m" % searchurl
     q = dict(query, size=size)
-    print time.time()
+    print time.time(), "submitting scroll query"
     res = requests.post(url, json=q).json()
     total = res['hits']['total']
     got = len(res['hits']['hits'])
     rem = total - got
-    print time.time()
-    print "got %s of %s; %s remaining" % (got, total, rem)
+    print time.time(), "got %s of %s; %s remaining" % (got, total, rem)
     scroll_id = res['_scroll_id']
     scroll_q = dict(scroll="10m", scroll_id=scroll_id)
     while res['hits']['hits']:
         yield res['hits']['hits']
         res = requests.post(scrollurl, json=scroll_q).json()
-        print time.time()
         got = len(res['hits']['hits'])
         rem -= got
-        print "got %s of %s; %s remaining" % (got, total, rem)
+        print time.time(), "got %s of %s; %s remaining" % (got, total, rem)
 
 def scrollids(query, size=100):
     for hits in scrollhits(query, size):
@@ -77,9 +75,9 @@ def process_file(path):
 
     for key, terms in terms_synonyms:
         key_id = key.split('_')[0]
-        print "%s\t%s" % (key_id, terms)
+        print time.time(), "%s\t%s" % (key_id, terms)
 
-        q = make_query_object2(terms)
+        q = make_terms_query(terms)
         for article_id in scrollids(q):
             print key_id, article_id
         print
