@@ -33,7 +33,7 @@ def make_terms_query(terms, extra_conditions=None):
 
 def scrollhits(query, size=100):
     url = "%s?scroll=1m" % searchurl
-    q = dict(query, size=size)  # sort="_doc"
+    q = dict(query, size=size, sort="_doc")
     print >>sys.stderr, time.time(), "submitting scroll query"
     res = requests.post(url, json=q).json()
     total = res['hits']['total']
