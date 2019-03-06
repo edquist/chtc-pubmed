@@ -1,0 +1,12 @@
+#!/bin/bash
+
+usage () {
+  echo "usage: $(basename "$0") xyz_lexicon.txt"
+  echo "writes xyz_lexicon.tab and xyz_lexicon.log"
+  exit
+}
+
+[[ $1 = *.txt && -e $1 ]] || usage
+
+time ./chtc_query2.py drugs3.txt 2>&1 > d3.tab | tee d3.log
+
