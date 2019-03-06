@@ -5,6 +5,7 @@ import sys
 import json
 import requests
 import time
+import os
 import re
 
 
@@ -88,7 +89,14 @@ def process_file(path):
         print >>sys.stderr
 
 
+def usage():
+    print "usage: %s xyz_lexicon.txt" % os.path.basename(__file__)
+    sys.exit()
+
+
 def main():
+    if len(sys.argv[1:]) != 1:
+        usage()
     process_file(sys.argv[1])
 
 
