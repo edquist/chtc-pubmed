@@ -29,6 +29,7 @@ def make_terms_query(terms, extra_conditions=None):
     query = {'query': {'bool': {'must': must }}}
     return query
 
+
 def scrollhits(query, size=100):
     url = "%s?scroll=10m" % searchurl
     q = dict(query, size=size)
@@ -47,16 +48,19 @@ def scrollhits(query, size=100):
         rem -= got
         print time.time(), "got %s of %s; %s remaining" % (got, total, rem)
 
+
 def scrollids(query, size=100):
     for hits in scrollhits(query, size):
         for hit in hits:
             yield hit['_id']
+
 
 def get_count(terms, through_year, url_base):
     q = make_query_object(target_term, key_phrase, through_year)
     res = requests.get(url_base, data=json.dumps(q))
     ret_cnt = res.json()['count']
     return ret_cnt
+
 
 def get_terms_synonyms(path):
     terms_synonyms = []
@@ -69,6 +73,7 @@ def get_terms_synonyms(path):
             #id_ = re.search(r'^[A-Z]+0*(\d+)_', key).group(1)
             terms_synonyms.append((key, terms))
     return terms_synonyms
+
 
 def process_file(path):
     terms_synonyms = get_terms_synonyms(path)
@@ -89,3 +94,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
