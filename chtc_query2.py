@@ -33,12 +33,12 @@ def make_terms_query(terms, extra_conditions=None):
 def scrollhits(query, size=100):
     url = "%s?scroll=10m" % searchurl
     q = dict(query, size=size)
-    print time.time(), "submitting scroll query"
+    print >>sys.stderr, time.time(), "submitting scroll query"
     res = requests.post(url, json=q).json()
     total = res['hits']['total']
     got = len(res['hits']['hits'])
     rem = total - got
-    print time.time(), "got %s of %s; %s remaining" % (got, total, rem)
+    print >>sys.stderr, time.time(), "got %s of %s; %s remaining" % (got, total, rem)
     scroll_id = res['_scroll_id']
     scroll_q = dict(scroll="10m", scroll_id=scroll_id)
     while res['hits']['hits']:
@@ -46,7 +46,7 @@ def scrollhits(query, size=100):
         res = requests.post(scrollurl, json=scroll_q).json()
         got = len(res['hits']['hits'])
         rem -= got
-        print time.time(), "got %s of %s; %s remaining" % (got, total, rem)
+        print >>sys.stderr, time.time(), "got %s of %s; %s remaining" % (got, total, rem)
 
 
 def scrollids(query, size=100):
@@ -80,12 +80,12 @@ def process_file(path):
 
     for key, terms in terms_synonyms:
         key_id = key.split('_')[0]
-        print time.time(), "%s\t%s" % (key_id, terms)
+        print >>sys.stderr, time.time(), "%s\t%s" % (key_id, terms)
 
         q = make_terms_query(terms)
         for article_id in scrollids(q):
             print key_id, article_id
-        print
+        print >>sys.stderr
 
 
 def main():
