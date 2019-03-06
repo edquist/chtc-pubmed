@@ -58,13 +58,20 @@ def scrollhits(query, size=100):
     q = dict(query, size=size)
     print time.time()
     res = requests.post(url, json=q).json()
+    total = res['hits']['total']
+    got = len(res['hits']['hits'])
+    rem = total - got
     print time.time()
+    print "got %s of %s; %s remaining" % (got, total, rem)
     scroll_id = res['_scroll_id']
     scroll_q = dict(scroll="10m", scroll_id=scroll_id)
     while res['hits']['hits']:
         yield res['hits']['hits']
         res = requests.post(scrollurl, json=scroll_q).json()
         print time.time()
+        got = len(res['hits']['hits'])
+        rem -= got
+        print "got %s of %s; %s remaining" % (got, total, rem)
 
 def scrollids(query, size=100):
     for hits in scrollhits(query, size):
