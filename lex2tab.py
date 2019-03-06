@@ -78,7 +78,7 @@ def process_file(path):
         print >>sys.stderr, time.time(), "%s\t%s" % (key_id, terms)
 
         q = make_terms_query(terms)
-        for article_id in scrollids(q):
+        for article_id in scrollids(q, 10000):
             print key_id, article_id
         print >>sys.stderr
 
