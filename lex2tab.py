@@ -32,7 +32,7 @@ def make_terms_query(terms, extra_conditions=None):
 
 
 def scrollhits(query, size=100):
-    url = "%s?scroll=10m" % searchurl
+    url = "%s?scroll=1m" % searchurl
     q = dict(query, size=size)
     print >>sys.stderr, time.time(), "submitting scroll query"
     res = requests.post(url, json=q).json()
@@ -41,7 +41,7 @@ def scrollhits(query, size=100):
     rem = total - got
     print >>sys.stderr, time.time(), "got %s of %s; %s remaining" % (got, total, rem)
     scroll_id = res['_scroll_id']
-    scroll_q = dict(scroll="10m", scroll_id=scroll_id)
+    scroll_q = dict(scroll="1m", scroll_id=scroll_id)
     while res['hits']['hits']:
         yield res['hits']['hits']
         res = requests.post(scrollurl, json=scroll_q).json()
