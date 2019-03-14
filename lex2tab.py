@@ -77,14 +77,16 @@ def term_cleanup(term):
 def make_lookup_file(lexpath):
     terms_synonyms = get_terms_synonyms(lexpath)
 
-    for idx, key, terms in enumerate(terms_synonyms, 1):
+    for idx, key_terms in enumerate(terms_synonyms, 1):
+        key, terms = key_terms
         key_id = key.split('_')[0]
         print "\t".join([idx, key_id, key, term_cleanup(terms[0])])
 
 def process_file(lexpath):
     terms_synonyms = get_terms_synonyms(lexpath)
 
-    for idx, key, terms in enumerate(terms_synonyms, 1):
+    for idx, key_terms in enumerate(terms_synonyms, 1):
+        key, terms = key_terms
         key_id = key.split('_')[0]
         print >>sys.stderr, time.time(), "%s\t%s\t%s" % (idx, key_id, terms)
 
