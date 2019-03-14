@@ -73,13 +73,13 @@ def get_terms_synonyms(lexpath):
 def process_file(lexpath):
     terms_synonyms = get_terms_synonyms(lexpath)
 
-    for key, terms in terms_synonyms:
+    for idx, key, terms in enumerate(terms_synonyms, 1):
         key_id = key.split('_')[0]
-        print >>sys.stderr, time.time(), "%s\t%s" % (key_id, terms)
+        print >>sys.stderr, time.time(), "%s\t%s\t%s" % (idx, key_id, terms)
 
         q = make_terms_query(terms)
         for article_id in scrollids(q, 10000):
-            print key_id, article_id
+            print idx, article_id
         print >>sys.stderr
 
 
