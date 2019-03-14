@@ -69,6 +69,17 @@ def get_terms_synonyms(lexpath):
             terms_synonyms.append((key, terms))
     return terms_synonyms
 
+def term_cleanup(term):
+    term = re.sub(r' +', '_', term)
+    term = re.sub(r'\W', '', term)
+    return term
+
+def make_lookup_file(lexpath):
+    terms_synonyms = get_terms_synonyms(lexpath)
+
+    for idx, key, terms in enumerate(terms_synonyms, 1):
+        key_id = key.split('_')[0]
+        print "\t".join([idx, key_id, key, term_cleanup(terms[0])])
 
 def process_file(lexpath):
     terms_synonyms = get_terms_synonyms(lexpath)
