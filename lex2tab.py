@@ -95,16 +95,20 @@ def process_file(lexpath):
 
 
 def usage():
-    print "usage: %s xyz_lexicon.txt" % os.path.basename(__file__)
+    print "usage: %s [-l] xyz_lexicon.txt" % os.path.basename(__file__)
     sys.exit()
 
 
-def main():
-    if len(sys.argv[1:]) != 1:
+def main(args):
+    if args[:1] == ['-l']:
+        len(args) == 2 or usage()
+        make_lookup_file(args[1])
+    elif len(args) == 1:
+        process_file(sys.argv[1])
+    else:
         usage()
-    process_file(sys.argv[1])
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
 
