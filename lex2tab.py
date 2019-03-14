@@ -57,9 +57,9 @@ def scrollids(query, size=100):
             yield hit['_id']
 
 
-def get_terms_synonyms(path):
+def get_terms_synonyms(lexpath):
     terms_synonyms = []
-    with open(path) as infile:
+    with open(lexpath) as infile:
         for line in infile:
             key, vals = line.strip().split('\t')
             if key == "Concept_ID":
@@ -70,8 +70,8 @@ def get_terms_synonyms(path):
     return terms_synonyms
 
 
-def process_file(path):
-    terms_synonyms = get_terms_synonyms(path)
+def process_file(lexpath):
+    terms_synonyms = get_terms_synonyms(lexpath)
 
     for key, terms in terms_synonyms:
         key_id = key.split('_')[0]
