@@ -71,6 +71,7 @@ def get_terms_synonyms(lexpath):
 
 def term_cleanup(term):
     term = re.sub(r' +', '_', term)
+    term = re.sub(r'-',  '_', term)
     term = re.sub(r'\W', '', term)
     return term
 
