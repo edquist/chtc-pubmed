@@ -42,7 +42,7 @@ def scrollhits(query, size=100):
     print >>sys.stderr, time.time(), "got %s of %s; %s remaining" % (got, total, rem)
     scroll_id = res['_scroll_id']
     scroll_q = dict(scroll="1m", scroll_id=scroll_id)
-    while res['hits']['hits']:
+    while rem and res['hits']['hits']:
         yield res['hits']['hits']
         res = requests.post(scrollurl, json=scroll_q).json()
         got = len(res['hits']['hits'])
