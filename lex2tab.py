@@ -75,14 +75,21 @@ def term_cleanup(term):
     term = re.sub(r'\W', '', term)
     return term
 
+def escape(s):
+    # sqlite still requires escaping quote characters even when tab separated
+    if '\\' in s or '"' in s:
+        return re.sub(r'([\\"])', r'\\\1', s)
+    else:
+        return s
+
 def make_lookup_file(lexpath):
     terms_synonyms = get_terms_synonyms(lexpath)
 
     for idx, key_terms in enumerate(terms_synonyms, 1):
         key, terms = key_terms
         key_id = key.split('_')[0]
-        print "\t".join([str(idx), key_id, key,
-                         term_cleanup(terms[0]), '|'.join(terms)])
+        print "\t".join([str(idx), key_id, key, term_cleanup(terms[0]),
+                         '|'.join(map(escape, terms))])
 
 def process_file(lexpath):
     terms_synonyms = get_terms_synonyms(lexpath)
