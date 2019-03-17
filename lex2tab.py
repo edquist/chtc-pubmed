@@ -81,7 +81,8 @@ def make_lookup_file(lexpath):
     for idx, key_terms in enumerate(terms_synonyms, 1):
         key, terms = key_terms
         key_id = key.split('_')[0]
-        print "\t".join([str(idx), key_id, key, term_cleanup(terms[0])])
+        print "\t".join([str(idx), key_id, key,
+                         term_cleanup(terms[0]), '|'.join(terms)])
 
 def process_file(lexpath):
     terms_synonyms = get_terms_synonyms(lexpath)
