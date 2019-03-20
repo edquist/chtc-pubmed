@@ -31,6 +31,14 @@ def make_terms_query(terms, extra_conditions=None):
     return query
 
 
+def make_ids_query(must=None):
+    if must:
+        query = {'query': {'bool': {'must': must }}, '_source': False}
+    else:
+        query = {'_source': False}
+    return query
+
+
 def scrollhits(query, size=100):
     url = "%s?scroll=1m" % searchurl
     q = dict(query, size=size, sort="_doc")
@@ -91,6 +99,13 @@ def make_lookup_file(lexpath):
         print "\t".join([str(idx), key_id, key, term_cleanup(terms[0]),
                          '|'.join(map(escape, terms))])
 
+
+def print_all_ids():
+    q = make_ids_query()
+    for article_id in scrollids(q, 10000):
+        print article_id
+
+
 def process_file(lexpath):
     terms_synonyms = get_terms_synonyms(lexpath)
 
@@ -107,6 +122,7 @@ def process_file(lexpath):
 
 def usage():
     print "usage: %s [-l] xyz_lexicon.txt" % os.path.basename(__file__)
+    print "   or: %s -A" % os.path.basename(__file__)
     sys.exit()
 
 
@@ -114,6 +130,8 @@ def main(args):
     if args[:1] == ['-l']:
         len(args) == 2 or usage()
         make_lookup_file(args[1])
+    elif args[:1] == ['-A']:
+        print_all_ids()
     elif len(args) == 1:
         process_file(sys.argv[1])
     else:
