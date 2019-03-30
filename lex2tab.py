@@ -112,7 +112,7 @@ def process_file(lexpath):
     for idx, key_terms in enumerate(terms_synonyms, 1):
         key, terms = key_terms
         key_id = key.split('_')[0]
-        print >>sys.stderr, time.time(), "%s\t%s\t%s" % (idx, key_id, terms)
+        print >>sys.stderr, time.time(), "%s\t%s" % (idx, key_id)
 
         q = make_terms_query(terms)
         for article_id in scrollids(q, 10000):
