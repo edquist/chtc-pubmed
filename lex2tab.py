@@ -124,7 +124,7 @@ def print_all_ids():
         print article_id
 
 
-def process_file(lexpath, sep=False):
+def process_file(lexpath, sep=False, verbose=False):
     terms_synonyms = get_terms_synonyms(lexpath)
 
     for idx, key_terms in enumerate(terms_synonyms, 1):
@@ -136,6 +136,8 @@ def process_file(lexpath, sep=False):
             q = make_terms_query_sep(terms)
         else:
             q = make_terms_query(terms)
+        if verbose:
+            print >>sys.stderr, "sending query:", q
         for article_id in scrollids(q, 10000):
             print idx, article_id
         print >>sys.stderr
@@ -148,6 +150,9 @@ def usage():
 
 
 def main(args):
+    verbose = False
+    if os.environ.get('VERBOSE') == '1':
+        verbose = True
     if args[:1] == ['-l']:
         len(args) == 2 or usage()
         make_lookup_file(args[1])
@@ -155,9 +160,9 @@ def main(args):
         print_all_ids()
     elif args[:1] == ['-s']:
         len(args) == 2 or usage()
-        process_file(args[1], sep=True)
+        process_file(args[1], sep=True, verbose=verbose)
     elif len(args) == 1:
-        process_file(args[0])
+        process_file(args[0], sep=False, verbose=verbose)
     else:
         usage()
 
