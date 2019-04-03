@@ -31,6 +31,24 @@ def make_terms_query(terms, extra_conditions=None):
     return query
 
 
+def must_term_sep(term):
+    must = []
+    for x in term.split():
+        should = [{'match_phrase': {'title':    x}},
+                  {'match_phrase': {'abstract': x}}]
+        must.append({'bool': {'should': should}})
+    return must
+
+
+def make_terms_query_sep(terms, extra_conditions=None):
+    should = [ must_term_sep(term) for term in terms ]
+    must = [{'bool': {'should': should}}]
+    if extra_conditions:
+        must += extra_conditions
+    query = {'query': {'bool': {'must': must }}, '_source': False}
+    return query
+
+
 def make_ids_query(must=None):
     if must:
         query = {'query': {'bool': {'must': must }}, '_source': False}
