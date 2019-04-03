@@ -124,7 +124,7 @@ def print_all_ids():
         print article_id
 
 
-def process_file(lexpath):
+def process_file(lexpath, sep=False):
     terms_synonyms = get_terms_synonyms(lexpath)
 
     for idx, key_terms in enumerate(terms_synonyms, 1):
@@ -132,14 +132,17 @@ def process_file(lexpath):
         key_id = key.split('_')[0]
         print >>sys.stderr, time.time(), "%s\t%s" % (idx, key_id)
 
-        q = make_terms_query(terms)
+        if sep:
+            q = make_terms_query_sep(terms)
+        else:
+            q = make_terms_query(terms)
         for article_id in scrollids(q, 10000):
             print idx, article_id
         print >>sys.stderr
 
 
 def usage():
-    print "usage: %s [-l] xyz_lexicon.txt" % os.path.basename(__file__)
+    print "usage: %s [-l|-s] xyz_lexicon.txt" % os.path.basename(__file__)
     print "   or: %s -A" % os.path.basename(__file__)
     sys.exit()
 
@@ -150,6 +153,9 @@ def main(args):
         make_lookup_file(args[1])
     elif args[:1] == ['-A']:
         print_all_ids()
+    elif args[:1] == ['-s']:
+        len(args) == 2 or usage()
+        process_file(sys.argv[1], sep=True)
     elif len(args) == 1:
         process_file(sys.argv[1])
     else:
