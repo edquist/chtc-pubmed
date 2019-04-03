@@ -37,7 +37,7 @@ def must_term_sep(term):
         should = [{'match_phrase': {'title':    x}},
                   {'match_phrase': {'abstract': x}}]
         must.append({'bool': {'should': should}})
-    return must
+    return {'bool': {'must': must}}
 
 
 def make_terms_query_sep(terms, extra_conditions=None):
