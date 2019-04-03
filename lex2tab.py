@@ -155,9 +155,9 @@ def main(args):
         print_all_ids()
     elif args[:1] == ['-s']:
         len(args) == 2 or usage()
-        process_file(sys.argv[1], sep=True)
+        process_file(args[1], sep=True)
     elif len(args) == 1:
-        process_file(sys.argv[1])
+        process_file(args[0])
     else:
         usage()
 
