@@ -34,6 +34,8 @@ def make_terms_query(terms, extra_conditions=None):
 def must_term_sep(term):
     must = []
     for x in term.split():
+        if not re.search(r'[a-zA-Z0-9]', x):
+            continue
         should = [{'match_phrase': {'title':    x}},
                   {'match_phrase': {'abstract': x}}]
         must.append({'bool': {'should': should}})
