@@ -72,6 +72,8 @@ def scrollhits(query, size=100):
     scroll_q = dict(scroll="1m", scroll_id=scroll_id)
     while res['hits']['hits']:
         yield res['hits']['hits']
+        if rem == 0:
+            break
         res = requests.post(scrollurl, json=scroll_q).json()
         got = len(res['hits']['hits'])
         rem -= got
