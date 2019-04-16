@@ -3,7 +3,6 @@
 
 import sys
 import json
-import requests
 import time
 import os
 import re
@@ -60,6 +59,7 @@ def make_ids_query(must=None):
 
 
 def scrollhits(query, size=100):
+    import requests
     url = "%s?scroll=1m" % searchurl
     q = dict(query, size=size, sort="_doc")
     print >>sys.stderr, time.time(), "submitting scroll query"
