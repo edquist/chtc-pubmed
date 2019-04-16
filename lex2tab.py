@@ -69,7 +69,7 @@ def scrollhits(query, size=100):
     rem = total - got
     print >>sys.stderr, time.time(), "got %s of %s; %s remaining" % (got, total, rem)
     scroll_id = res['_scroll_id']
-    scroll_q = dict(scroll="1m", scroll_id=scroll_id)
+    scroll_q = dict(scroll="10m", scroll_id=scroll_id)
     while res['hits']['hits']:
         yield res['hits']['hits']
         if rem == 0:
